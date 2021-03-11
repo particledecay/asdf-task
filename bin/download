@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set \
+  -o errexit \
+  -o nounset \
+  -o pipefail
+
+# required environment variables
+: ${ASDF_INSTALL_VERSION?}
+: ${ASDF_DOWNLOAD_PATH?}
+
+readonly repository="go-task/task"
+readonly toolname="task"
+
+# rate limit support with a proper token
+CURL="curl -s"
+if [ -n "${OAUTH_TOKEN:-}" ]
+then
+  CURL="$CURL -H 'Authorization: token $OAUTH_TOKEN'"
+fi
+
+download() {
+  local -r os=$(get_os)
+  local -r arch=$(get_arch)
+  local -r filename="${toolname}_${os}_${arch}.tar.gz"
+  local -r download_url="$(get_download_url $filename)"
+
+  echo "Downloading ${toolname} version ${ASDF_INSTALL_VERSION} from ${download_url}"
+  if $CURL -fsL "${download_url}" -o "${ASDF_DOWNLOAD_PATH}/${filename}"
+  then
+    echo "Successfully downloaded ${filename}"
+    exit 0
+  else
+    echo "Failed to download ${filename}"
+    exit 1
+  fi
+}
+
+# get the OS family name
+get_os() {
+  uname | tr '[:upper:]' '[:lower:]'
+}
+
+# get the cpu architecture
+get_arch() {
+  local -r arch=$(uname -m)
+  
+  case $arch in
+    x86_64)
+      echo amd64
+      ;;
+    *86)
+      echo 386
+      ;;
+  esac
+}
+
+# return the full URL to the download
+get_download_url() {
+  local -r filename=$1
+
+  local -r os=$(get_os)
+  local -r arch=$(get_arch)
+
+  echo "https://github.com/$repository/releases/download/v${ASDF_INSTALL_VERSION}/$filename"
+}
+
+download
