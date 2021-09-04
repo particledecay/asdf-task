@@ -8,7 +8,7 @@ get_arch() {
   local -r arch=$(uname -m)
 
   case $arch in
-    x86_64)
+    arm64|x86_64)
       echo amd64
       ;;
     *86)
