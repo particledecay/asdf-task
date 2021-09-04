@@ -14,5 +14,9 @@ get_arch() {
     *86)
       echo 386
       ;;
+    *)
+      # e.g. "arm64"
+      echo $arch
+      ;;
   esac
 }
