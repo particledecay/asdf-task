@@ -5,6 +5,8 @@ set \
   -o nounset \
   -o pipefail
 
+source "$(dirname $0)/../lib/utils.sh"
+
 # required environment variables
 : ${ASDF_INSTALL_TYPE?}
 : ${ASDF_INSTALL_VERSION?}
@@ -31,23 +33,6 @@ install() {
       echo "Failed to install ${toolname} ${ASDF_INSTALL_VERSION}"
       exit 1
     fi
-}
-
-get_os() {
-  uname | tr '[:upper:]' '[:lower:]'
-}
-
-get_arch() {
-  local -r arch=$(uname -m)
-
-  case $arch in
-    x86_64)
-      echo amd64
-      ;;
-    *86)
-      echo 386
-      ;;
-  esac
 }
 
 install
