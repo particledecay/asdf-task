@@ -5,6 +5,8 @@ set \
   -o nounset \
   -o pipefail
 
+source "$(dirname $0)/../lib/utils.sh"
+
 # required environment variables
 : ${ASDF_INSTALL_VERSION?}
 : ${ASDF_DOWNLOAD_PATH?}
@@ -34,25 +36,6 @@ download() {
     echo "Failed to download ${filename}"
     exit 1
   fi
-}
-
-# get the OS family name
-get_os() {
-  uname | tr '[:upper:]' '[:lower:]'
-}
-
-# get the cpu architecture
-get_arch() {
-  local -r arch=$(uname -m)
-  
-  case $arch in
-    x86_64)
-      echo amd64
-      ;;
-    *86)
-      echo 386
-      ;;
-  esac
 }
 
 # return the full URL to the download
