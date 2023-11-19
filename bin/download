@@ -1,51 +1,22 @@
 #!/usr/bin/env bash
 
-set \
-  -o errexit \
-  -o nounset \
-  -o pipefail
+set -euo pipefail
 
-source "$(dirname $0)/../lib/utils.sh"
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
 
-# required environment variables
-: ${ASDF_INSTALL_VERSION?}
-: ${ASDF_DOWNLOAD_PATH?}
+# shellcheck source=./lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
 
-readonly repository="go-task/task"
-readonly toolname="task"
+mkdir -p "$ASDF_DOWNLOAD_PATH"
 
-# rate limit support with a proper token
-CURL="curl -s"
-if [ -n "${OAUTH_TOKEN:-}" ]
-then
-  CURL="$CURL -H 'Authorization: token $OAUTH_TOKEN'"
-fi
+release_file="$ASDF_DOWNLOAD_PATH/${TOOL_NAME}_$(get_os)_$(get_arch).tar.gz"
 
-download() {
-  local -r os=$(get_os)
-  local -r arch=$(get_arch)
-  local -r filename="${toolname}_${os}_${arch}.tar.gz"
-  local -r download_url="$(get_download_url $filename)"
+# Download tar.gz file to the download directory
+download_release "$ASDF_INSTALL_VERSION" "$release_file"
 
-  echo "Downloading ${toolname} version ${ASDF_INSTALL_VERSION} from ${download_url}"
-  if $CURL -fsL "${download_url}" -o "${ASDF_DOWNLOAD_PATH}/${filename}"
-  then
-    echo "Successfully downloaded ${filename}"
-    exit 0
-  else
-    echo "Failed to download ${filename}"
-    exit 1
-  fi
-}
+#  Extract contents of tar.gz file into the download directory
+tar -xzf "$release_file" -C "$ASDF_DOWNLOAD_PATH" "$TOOL_NAME" || fail "Could not extract $release_file"
 
-# return the full URL to the download
-get_download_url() {
-  local -r filename=$1
-
-  local -r os=$(get_os)
-  local -r arch=$(get_arch)
-
-  echo "https://github.com/$repository/releases/download/v${ASDF_INSTALL_VERSION}/$filename"
-}
-
-download
+# Remove the tar.gz file since we don't need to keep it
+rm "$release_file"

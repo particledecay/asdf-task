@@ -1,0 +1,28 @@
+---
+# installation: `pre-commit install`
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args:
+          - "--markdown-linebreak-ext=md"
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+  - repo: https://github.com/semgrep/semgrep
+    rev: v1.48.0
+    hooks:
+      - id: semgrep-ci
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: script-must-not-have-extension
+      - id: shellcheck
+      - id: shfmt

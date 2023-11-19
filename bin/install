@@ -1,38 +1,11 @@
 #!/usr/bin/env bash
 
-set \
-  -o errexit \
-  -o nounset \
-  -o pipefail
+set -euo pipefail
 
-source "$(dirname $0)/../lib/utils.sh"
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
 
-# required environment variables
-: ${ASDF_INSTALL_TYPE?}
-: ${ASDF_INSTALL_VERSION?}
-: ${ASDF_INSTALL_PATH?}
-: ${ASDF_DOWNLOAD_PATH?}
+# shellcheck source=./lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
 
-readonly repository="go-task/task"
-readonly toolname="task"
-
-install() {
-    local -r os=$(get_os)
-    local -r arch=$(get_arch)
-    local -r filename="${toolname}_${os}_${arch}.tar.gz"
-    local -r download_pkg="${ASDF_DOWNLOAD_PATH}/${filename}"
-
-    echo "Extracting ${toolname} from tar archive"
-    [ ! -d "${ASDF_INSTALL_PATH}/bin" ] && mkdir -p "${ASDF_INSTALL_PATH}/bin"
-    tar xf "$download_pkg" -C "${ASDF_INSTALL_PATH}/bin" "$toolname" 2>/dev/null
-    if [ $? -eq 0 ]
-    then
-      echo "Successfully installed ${toolname} ${ASDF_INSTALL_VERSION}"
-      exit 0
-    else
-      echo "Failed to install ${toolname} ${ASDF_INSTALL_VERSION}"
-      exit 1
-    fi
-}
-
-install
+install_version "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
